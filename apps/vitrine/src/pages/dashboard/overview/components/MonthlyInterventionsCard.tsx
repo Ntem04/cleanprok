@@ -70,7 +70,7 @@ export default function MonthlyInterventionsCard() {
       >
         <div className="flex items-start gap-4">
           {/* Icône Calendrier */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-emerald-100 bg-[#eef7f2] text-[#135d3b]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-[#15364a]">
             <CalendarDays size={22} aria-hidden={true} />
           </div>
 

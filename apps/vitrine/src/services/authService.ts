@@ -10,6 +10,7 @@ export interface UserProfile {
   readonly email: string;
   readonly name: string;
   readonly role: "client" | "admin" | "agent";
+  readonly avatarUrl?: string;
 }
 
 export interface AuthResponse {
@@ -46,11 +47,26 @@ export const authService = {
   },
 
   /**
-   * Récupère le profil de l'utilisateur authentifié.
+   * Récupère le profil de l'utilisateur authentifié depuis la BDD (GET /auth/me).
    */
   async getProfile(): Promise<UserProfile> {
     try {
       const response = await apiClient.get<UserProfile>("/auth/me");
+      return response.data;
+    } catch (error) {
+      throw error as ApiErrorResponse;
+    }
+  },
+
+  /**
+   * Met à jour la photo de profil / avatar de l'administrateur dans la BDD.
+   * Endpoint prévu : PATCH /auth/avatar
+   */
+  async updateAvatar(avatarUrl: string): Promise<UserProfile> {
+    try {
+      const response = await apiClient.patch<UserProfile>("/auth/avatar", {
+        avatarUrl,
+      });
       return response.data;
     } catch (error) {
       throw error as ApiErrorResponse;

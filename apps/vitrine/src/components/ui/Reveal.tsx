@@ -10,6 +10,8 @@ interface RevealProps {
   className?: string;
   // Déclenche l'animation une seule fois (true) ou à chaque scroll (false)
   once?: boolean;
+  // Déclenche l'animation au chargement dès le montage sans exiger de scroll manuel
+  immediate?: boolean;
 }
 
 export default function Reveal({
@@ -18,6 +20,7 @@ export default function Reveal({
   direction = "up",
   className = "",
   once = true,
+  immediate = false,
 }: RevealProps) {
   const [isVisible, setIsVisible] = useState(
     () =>
@@ -25,6 +28,15 @@ export default function Reveal({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (immediate) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 20);
+      return () => clearTimeout(timer);
+    }
+  }, [immediate]);
 
   useEffect(() => {
     const element = ref.current;

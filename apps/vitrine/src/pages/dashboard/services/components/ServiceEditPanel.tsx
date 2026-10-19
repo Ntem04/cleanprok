@@ -195,8 +195,8 @@ function ServiceEditForm({
 
           {/* Notification feedback */}
           {feedback === "success" && (
-            <div className="flex items-center gap-2 rounded-md bg-emerald-50 p-2.5 text-sm text-emerald-800 border border-emerald-200">
-              <Check size={14} aria-hidden={true} />
+            <div className="flex items-center gap-2 rounded-md bg-slate-50 p-2.5 text-sm text-slate-800 border border-slate-200">
+              <Check size={14} className="text-[#135d3b]" aria-hidden={true} />
               <span>Modifications enregistrées avec succès.</span>
             </div>
           )}
@@ -231,7 +231,7 @@ function ServiceEditForm({
       {/* Bloc Info : Un catalogue fidèle à la référence */}
       <aside
         aria-label="Informations sur le catalogue de référence"
-        className="rounded-xl border border-emerald-100 bg-[#eef7f2] p-4 text-sm"
+        className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm"
       >
         <h3 className="font-bold text-[#15364a]">
           Un catalogue fidèle à la référence

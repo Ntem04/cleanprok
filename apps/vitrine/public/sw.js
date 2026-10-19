@@ -1,11 +1,9 @@
-const CACHE_NAME = "cleanpro-v1";
+const CACHE_NAME = "cleanpro-v2";
 const STATIC_ASSETS = [
-  "/",
-  "/index.html",
   "/icon.webp",
 ];
 
-// 1. Installation du Service Worker et mise en cache immédiate
+// 1. Installation du Service Worker
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -17,7 +15,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// 2. Activation et nettoyage des anciens caches
+// 2. Activation et nettoyage des anciens caches (purge cleanpro-v1 et versions obsolètes)
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -30,7 +28,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// 3. Stratégie Stale-While-Revalidate pour contrer la latence ngrok
+// 3. Stratégie de mise en cache intelligente anti-FOUC (Flash of Unstyled/Wrong Content)
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -45,7 +43,15 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Pour les assets (JS, CSS, images, polices) : Servir directement depuis le cache (0ms)
+  // Requêtes de navigation HTML : Network-First pour éviter tout affichage de contenu obsolète
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req).catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Pour les assets statiques (JS, CSS, images, polices) : Servir depuis le cache avec rafraîchissement
   event.respondWith(
     caches.match(req).then((cachedResponse) => {
       const fetchPromise = fetch(req)
@@ -64,9 +70,7 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => cachedResponse);
 
-      // Si présent dans le cache, retour instantané sans attendre ngrok !
       return cachedResponse || fetchPromise;
     })
   );
 });
-

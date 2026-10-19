@@ -1,14 +1,36 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
 import DashboardTopBar from "./components/DashboardTopBar";
 import DashboardErrorBoundary from "./components/DashboardErrorBoundary";
+import { AdminProfileProvider } from "./context/AdminProfileContext";
 
 export default function DashboardLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<number | null>(null);
+
+  const handleScroll = () => {
+    setIsScrolling(true);
+    if (scrollTimeoutRef.current) {
+      window.clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = window.setTimeout(() => {
+      setIsScrolling(false);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#f8fafc] text-sm text-slate-800 antialiased font-sans">
+    <AdminProfileProvider>
+      <div className="flex h-screen w-screen overflow-hidden bg-[#f8fafc] text-sm text-slate-800 antialiased font-sans">
       {/* ─── Accessibilité WCAG 2.2 AA : Lien d'évitement au clavier ──────── */}
       <a
         href="#main-dashboard-content"
@@ -35,7 +57,10 @@ export default function DashboardLayout() {
         <main
           id="main-dashboard-content"
           tabIndex={-1}
-          className="flex-1 overflow-y-auto outline-none"
+          onScroll={handleScroll}
+          className={`flex-1 overflow-y-auto outline-none cleanpro-autohide-scrollbar ${
+            isScrolling ? "is-scrolling" : ""
+          }`}
         >
           <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
             <DashboardErrorBoundary>
@@ -45,5 +70,6 @@ export default function DashboardLayout() {
         </main>
       </div>
     </div>
+    </AdminProfileProvider>
   );
 }

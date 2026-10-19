@@ -4,14 +4,15 @@ import {
   Menu,
   Search,
   Calendar,
-  Bell,
   ChevronDown,
   LogOut,
   User,
   Shield,
   Loader2,
 } from "lucide-react";
-import { authService, type UserProfile } from "../../../services/authService";
+import { authService } from "../../../services/authService";
+import { useAdminProfile } from "../context/useAdminProfile";
+import AdminAvatar from "./AdminAvatar";
 
 interface DashboardTopBarProps {
   readonly onToggleMobileSidebar: () => void;
@@ -33,17 +34,6 @@ function getFormattedCurrentDate(): string {
 
   // Met la première lettre en majuscule : "Jeudi 15 octobre 2026"
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
-
-/**
- * Génère des initiales de secours (fallback) à partir d'un nom complet.
- * Ex: "Amina Diallo" -> "AD"
- */
-function getInitials(name: string): string {
-  if (!name.trim()) return "AD";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts.at(-1)![0]).toUpperCase();
 }
 
 /**
@@ -90,46 +80,8 @@ export default function DashboardTopBar({
   // Ne déclenche aucun re-render React à chaque touche frappée, performances maximales
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // 3. PROFIL UTILISATEUR & AVATAR DEPUIS LA BDD
-  // Préparé pour recevoir le profil réel lors du branchement backend
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchUserProfile = async () => {
-      try {
-        // APPEL API BACKEND (GET /auth/me)
-        const profile = await authService.getProfile();
-        if (isMounted && profile) {
-          setCurrentUser(profile);
-          // Si le backend renvoie un avatar_url (ex: stocké dans la BDD)
-          if ((profile as unknown as { avatarUrl?: string }).avatarUrl) {
-            setAvatarUrl(
-              (profile as unknown as { avatarUrl?: string }).avatarUrl || null,
-            );
-          }
-        }
-      } catch {
-        // En mode développement sans backend connecté : conservation des données d'affichage
-        if (isMounted) {
-          setCurrentUser({
-            id: "usr_admin_default",
-            name: "Amina Diallo",
-            email: "amina.diallo@cleanpro.cm",
-            role: "admin",
-          });
-        }
-      }
-    };
-
-    void fetchUserProfile();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // 3. PROFIL UTILISATEUR & AVATAR DEPUIS LA BDD (Synchronisé via useAdminProfile)
+  const { profile: currentUser } = useAdminProfile();
 
   // Gestion du menu utilisateur et de la déconnexion
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -166,7 +118,6 @@ export default function DashboardTopBar({
   const displayName = currentUser?.name || "Amina Diallo";
   const displayRole =
     currentUser?.role === "admin" ? "Responsable d'agence" : "Collaborateur";
-  const initials = getInitials(displayName);
 
   return (
     <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-slate-200/80 bg-white px-4 sm:px-6 select-none">
@@ -231,19 +182,6 @@ export default function DashboardTopBar({
           </time>
         </div>
 
-        {/* Cloche de notifications avec puce verte conforme au visuel */}
-        <button
-          type="button"
-          aria-label="3 notifications non lues"
-          className="relative flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-[#135d3b]"
-        >
-          <Bell size={17} aria-hidden={true} />
-          <span
-            className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#135d3b]"
-            aria-hidden="true"
-          />
-        </button>
-
         {/* Bloc profil utilisateur (Avatar dynamique connecté à la BDD ou fallback initiales) */}
         <div className="relative">
           <button
@@ -254,19 +192,8 @@ export default function DashboardTopBar({
             aria-label={`Menu du compte ${displayName}`}
             className="flex items-center gap-3 text-left focus-visible:outline-2 focus-visible:outline-[#135d3b] rounded-md p-1"
           >
-            {/* Emplacement avatar : image BDD si disponible, sinon initiales typées */}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-[#15364a] text-white text-sm font-bold">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={`Profil de ${displayName}`}
-                  className="h-full w-full object-cover"
-                  onError={() => setAvatarUrl(null)} // Fallback propre si l'URL BDD est invalide (Fail-Safe)
-                />
-              ) : (
-                <span aria-hidden={true}>{initials}</span>
-              )}
-            </div>
+            {/* Avatar Administrateur connecté à la BDD avec protection OWASP/CWE-79 */}
+            <AdminAvatar size="sm" showOnlineIndicator={true} />
 
             <div className="hidden sm:block leading-tight">
               <span className="block text-sm font-bold text-[#15364a]">
@@ -295,13 +222,16 @@ export default function DashboardTopBar({
               <div
                 role="menu"
                 aria-orientation="vertical"
-                className="absolute right-0 z-40 mt-2 w-56 origin-top-right rounded-md border border-slate-200 bg-white p-1 shadow-lg ring-1 ring-black/5 focus:outline-none"
+                className="absolute right-0 z-40 mt-2 w-64 origin-top-right rounded-md border border-slate-200 bg-white p-1 shadow-lg ring-1 ring-black/5 focus:outline-none"
               >
-                <div className="border-b border-slate-100 px-3 py-2 text-sm">
-                  <p className="font-bold text-[#15364a]">{displayName}</p>
-                  <p className="truncate text-sm text-slate-400">
-                    {currentUser?.email || "amina.diallo@cleanpro.cm"}
-                  </p>
+                <div className="border-b border-slate-100 px-3 py-2 text-sm flex items-center gap-3">
+                  <AdminAvatar size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-[#15364a] truncate">{displayName}</p>
+                    <p className="truncate text-sm text-slate-400">
+                      {currentUser?.email || "amina.diallo@cleanpro.cm"}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="py-1">

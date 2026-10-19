@@ -241,7 +241,7 @@ export default function ServicesDashboardPage() {
             </Reveal>
           ) : (
             <div className="flex min-h-[380px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center shadow-xs">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-[#135d3b]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-[#15364a]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"

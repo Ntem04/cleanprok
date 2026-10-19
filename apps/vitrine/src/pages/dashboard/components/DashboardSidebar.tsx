@@ -1,16 +1,19 @@
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home,
   FileSpreadsheet,
-  Users,
   CalendarDays,
   BarChart3,
   Mail,
   Settings,
   Leaf,
 } from "lucide-react";
+import Reveal from "../../../components/ui/Reveal";
 import CleanProLogo from "../../../assets/icon.webp";
 import OfficeImg from "../../../image/services-bureaux0.webp";
+import { useAdminProfile } from "../context/useAdminProfile";
+import AdminAvatar from "./AdminAvatar";
 
 interface NavItem {
   readonly to: string;
@@ -33,11 +36,6 @@ const NAV_ITEMS: readonly NavItem[] = Object.freeze([
     icon: FileSpreadsheet,
   },
   {
-    to: "/dashboard/teams",
-    label: "Nos Équipes",
-    icon: Users,
-  },
-  {
     to: "/dashboard/planning",
     label: "Planning",
     icon: CalendarDays,
@@ -51,7 +49,7 @@ const NAV_ITEMS: readonly NavItem[] = Object.freeze([
     to: "/dashboard/messages",
     label: "Messages",
     icon: Mail,
-    badge: 3,
+    // Prêt pour accueillir le nombre dynamique de messages non lus dès l'implémentation future (badge: unreadCount)
   },
   {
     to: "/dashboard/settings",
@@ -69,6 +67,36 @@ export default function DashboardSidebar({
   isOpenMobile = false,
   onCloseMobile,
 }: DashboardSidebarProps) {
+  const { profile } = useAdminProfile();
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem("cleanpro_dashboard_messages_v1");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const unread = parsed.filter((m: { status?: string }) => m.status === "unread").length;
+          return unread > 0 ? 3 : 0;
+        }
+      }
+    } catch {
+      // Ignore parse error
+    }
+    return 3;
+  });
+
+  useEffect(() => {
+    const handleCountChange = (e: Event) => {
+      const custom = e as CustomEvent<number>;
+      if (typeof custom.detail === "number") {
+        setUnreadMessagesCount(custom.detail);
+      }
+    };
+    window.addEventListener("cleanpro_messages_count", handleCountChange);
+    return () => {
+      window.removeEventListener("cleanpro_messages_count", handleCountChange);
+    };
+  }, []);
+
   return (
     <>
       {/* Overlay accessible mobile (WCAG 2.2 AA) */}
@@ -83,44 +111,47 @@ export default function DashboardSidebar({
       <aside
         id="dashboard-sidebar-nav"
         aria-label="Navigation principale du tableau de bord"
-        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col justify-between overflow-y-auto border-r border-slate-200/80 bg-white transition-transform duration-200 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col justify-between overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border-r border-slate-200/80 bg-white transition-transform duration-200 ease-in-out ${
           isOpenMobile ? "translate-x-0 shadow-xl" : "-translate-x-full lg:translate-x-0 lg:shadow-none"
         }`}
       >
         <div>
           {/* Logo officiel CleanPro conforme au visuel */}
-          <div className="flex h-20 items-center justify-between border-b border-slate-100 px-6">
-            <div className="flex items-center gap-2.5">
-              <img
-                src={CleanProLogo}
-                alt="CleanPro Services de Nettoyage"
-                className="h-9 w-auto object-contain"
-              />
-              <div className="leading-tight">
-                <span className="block text-base font-extrabold tracking-tight text-[#15364a]">
-                  CleanPro
-                </span>
-                <span className="block text-sm font-medium text-slate-500">
-                  Services de Nettoyage
-                </span>
+          <Reveal direction="left" delay={30} immediate={true}>
+            <div className="flex h-20 items-center justify-between border-b border-slate-100 px-6">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={CleanProLogo}
+                  alt="CleanPro Services de Nettoyage"
+                  className="h-9 w-auto object-contain"
+                />
+                <div className="leading-tight">
+                  <span className="block text-base font-extrabold tracking-tight text-[#15364a]">
+                    CleanPro
+                  </span>
+                  <span className="block text-sm font-medium text-slate-500">
+                    Services de Nettoyage
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Bouton fermeture sur mobile */}
-            {isOpenMobile && (
-              <button
-                type="button"
-                onClick={onCloseMobile}
-                aria-label="Fermer la barre latérale"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-[#135d3b] lg:hidden"
-              >
-                &times;
-              </button>
-            )}
-          </div>
+              {/* Bouton fermeture sur mobile */}
+              {isOpenMobile && (
+                <button
+                  type="button"
+                  onClick={onCloseMobile}
+                  aria-label="Fermer la barre latérale"
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-[#135d3b] lg:hidden"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+          </Reveal>
 
           {/* Menu de navigation */}
-          <nav className="px-3.5 py-4">
+          <Reveal direction="left" delay={70} immediate={true}>
+            <nav className="px-3.5 py-4">
             <ul className="space-y-1">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
@@ -151,19 +182,26 @@ export default function DashboardSidebar({
                             <span>{item.label}</span>
                           </div>
 
-                          {/* Badge de notification géométrique (valeur exacte "3") */}
-                          {item.badge !== undefined && (
-                            <span
-                              aria-label={`${item.badge} notifications non lues`}
-                              className={`inline-flex h-5 min-w-5 items-center justify-center rounded px-1.5 text-[13px] font-bold tabular-nums ${
-                                isActive
-                                  ? "bg-white text-[#135d3b]"
-                                  : "bg-[#135d3b] text-white"
-                              }`}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
+                          {/* Badge de notification dynamique pour les Messages ou éléments avec badge */}
+                          {(() => {
+                            const badgeValue =
+                              item.to === "/dashboard/messages"
+                                ? unreadMessagesCount
+                                : item.badge;
+                            if (badgeValue === undefined || badgeValue <= 0) return null;
+                            return (
+                              <span
+                                aria-label={`${badgeValue} notifications non lues`}
+                                className={`inline-flex h-5 min-w-5 items-center justify-center rounded px-1.5 text-[13px] font-bold tabular-nums ${
+                                  isActive
+                                    ? "bg-white text-[#135d3b]"
+                                    : "bg-[#135d3b] text-white"
+                                }`}
+                              >
+                                {badgeValue}
+                              </span>
+                            );
+                          })()}
                         </>
                       )}
                     </NavLink>
@@ -172,30 +210,51 @@ export default function DashboardSidebar({
               })}
             </ul>
           </nav>
+          </Reveal>
         </div>
 
-        {/* Bloc Bas de Sidebar : Accroche d'entreprise & Visuel bureau */}
-        <div className="p-4 border-t border-slate-100 space-y-3">
-          <div className="flex items-center gap-2 text-emerald-700">
-            <Leaf size={16} aria-hidden={true} />
-            <p className="text-[13px] font-medium leading-snug text-slate-700">
-              Des espaces plus propres, une meilleure qualité de vie.
+        {/* Bloc Bas de Sidebar : Profil BDD & Accroche d'entreprise */}
+        <Reveal direction="up" delay={120} immediate={true}>
+          <div className="p-4 border-t border-slate-100 space-y-3">
+            {/* Capsule Profil Administrateur avec photo issue de la BDD */}
+            <NavLink
+              to="/dashboard/settings"
+              onClick={onCloseMobile}
+              title="Gérer le profil administrateur"
+              className="flex items-center gap-3 rounded-lg border border-slate-200/80 bg-slate-50/80 p-2.5 transition hover:bg-slate-100/80 focus-visible:outline-2 focus-visible:outline-[#135d3b]"
+            >
+              <AdminAvatar size="sm" showOnlineIndicator={true} />
+              <div className="min-w-0 flex-1 leading-tight">
+                <p className="truncate text-sm font-bold text-[#15364a]">
+                  {profile.name || "Amina Diallo"}
+                </p>
+                <p className="truncate text-[13px] font-medium text-slate-500">
+                  {profile.role === "admin" ? "Responsable d'agence" : "Collaborateur"}
+                </p>
+              </div>
+            </NavLink>
+
+            <div className="flex items-center gap-2 text-emerald-700">
+              <Leaf size={16} aria-hidden={true} />
+              <p className="text-[13px] font-medium leading-snug text-slate-700">
+                Des espaces plus propres, une meilleure qualité de vie.
+              </p>
+            </div>
+
+            <div className="overflow-hidden rounded-lg border border-slate-200">
+              <img
+                src={OfficeImg}
+                alt="Locaux d'entreprise entretenus"
+                className="h-24 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <p className="text-sm text-slate-400 text-center font-medium">
+              CleanPro · Services de Nettoyage
             </p>
           </div>
-
-          <div className="overflow-hidden rounded-lg border border-slate-200">
-            <img
-              src={OfficeImg}
-              alt="Locaux d'entreprise entretenus"
-              className="h-24 w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-
-          <p className="text-sm text-slate-400 text-center font-medium">
-            CleanPro · Services de Nettoyage
-          </p>
-        </div>
+        </Reveal>
       </aside>
     </>
   );

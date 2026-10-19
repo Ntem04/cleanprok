@@ -62,13 +62,13 @@ export default function PlanningUpcomingList({
               aria-pressed={isSelected}
               className={`flex items-center justify-between rounded-lg p-3 text-sm cursor-pointer transition-all ${
                 isSelected
-                  ? "border border-emerald-300 bg-emerald-50/70 shadow-xs"
+                  ? "border border-slate-300 bg-slate-100 shadow-xs"
                   : "border border-slate-100 hover:border-slate-200 hover:bg-slate-50/80"
               }`}
             >
               {/* Icône + Titre & Lieu */}
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#eef7f2] border border-emerald-100">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 border border-slate-200 text-slate-700">
                   {getIcon(slot.category)}
                 </div>
                 <div>
@@ -93,7 +93,8 @@ export default function PlanningUpcomingList({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </section>
   );
 }

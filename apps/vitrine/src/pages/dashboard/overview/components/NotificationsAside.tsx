@@ -63,7 +63,7 @@ export default function NotificationsAside() {
                   className="group flex w-full items-center justify-between rounded-lg p-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-[#135d3b]"
                 >
                   <div className="flex items-start gap-3 text-sm">
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-50 text-slate-700 transition-colors group-hover:bg-[#eef7f2] group-hover:text-[#135d3b]">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-50 text-slate-700 transition-colors group-hover:bg-slate-100 group-hover:text-[#15364a]">
                       <Icon size={17} aria-hidden={true} />
                     </div>
                     <div className="space-y-0.5">

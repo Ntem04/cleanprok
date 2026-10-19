@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react";
 import {
   Pencil,
   Plus,
@@ -84,7 +85,7 @@ export default function PlanningDetailPanel({
       {/* Encadré d'information de référence */}
       <aside
         aria-label="Informations d'agenda"
-        className="rounded-xl border border-emerald-100 bg-[#eef7f2] p-4 text-sm"
+        className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm"
       >
         <h4 className="font-bold text-[#15364a]">Un agenda de référence</h4>
         <p className="mt-1 leading-relaxed text-slate-600">
@@ -122,7 +123,7 @@ function PlanningEditSection({
         aria-labelledby="section-modifier-empty-heading"
         className="flex min-h-[380px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center shadow-xs"
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-[#135d3b]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-[#15364a]">
           <Calendar size={24} aria-hidden={true} />
         </div>
         <h3
@@ -222,7 +223,7 @@ function PlanningEditForm({
       <div className="border-b border-slate-100 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-[#135d3b]">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-700">
               <Pencil size={13} aria-hidden={true} />
             </span>
             <h2
@@ -339,8 +340,8 @@ function PlanningEditForm({
 
         {/* Feedback */}
         {feedback === "success" && (
-          <div className="flex items-center gap-2 rounded-md bg-emerald-50 p-2 text-sm text-emerald-800 border border-emerald-200">
-            <Check size={14} aria-hidden={true} />
+          <div className="flex items-center gap-2 rounded-md bg-slate-50 p-2 text-sm text-slate-800 border border-slate-200">
+            <Check size={14} className="text-[#135d3b]" aria-hidden={true} />
             <span>Intervention mise à jour avec succès.</span>
           </div>
         )}
@@ -495,7 +496,7 @@ function PlanningAddSection({ onCreate, onCancel }: PlanningAddSectionProps) {
       <div className="border-b border-slate-100 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-[#135d3b]">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-700">
               <Plus size={13} aria-hidden={true} />
             </span>
             <h2
@@ -505,7 +506,7 @@ function PlanningAddSection({ onCreate, onCancel }: PlanningAddSectionProps) {
               Section Ajouter une intervention
             </h2>
           </div>
-          <span className="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[13px] font-semibold text-emerald-800">
+          <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[13px] font-semibold text-slate-700">
             Nouveau créneau
           </span>
         </div>
@@ -664,8 +665,8 @@ function PlanningAddSection({ onCreate, onCancel }: PlanningAddSectionProps) {
 
         {/* Feedback */}
         {feedback === "success" && (
-          <div className="flex items-center gap-2 rounded-md bg-emerald-50 p-2 text-sm text-emerald-800 border border-emerald-200">
-            <Check size={14} aria-hidden={true} />
+          <div className="flex items-center gap-2 rounded-md bg-slate-50 p-2 text-sm text-slate-800 border border-slate-200">
+            <Check size={14} className="text-[#135d3b]" aria-hidden={true} />
             <span>Intervention ajoutée et enregistrée avec succès !</span>
           </div>
         )}

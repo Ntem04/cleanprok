@@ -112,6 +112,72 @@ export interface ServicesCatalogApiResponse {
 
 export type CreateServicePayload = Omit<ServiceCatalogItem, "id" | "badgeLabel" | "isSelected">;
 
+// ─── Types pour les Paramètres (Settings) ────────────────────────────────────
+
+export interface SettingsProfileData {
+  readonly name: string;
+  readonly role: string;
+  readonly email: string;
+  readonly avatarUrl?: string;
+}
+
+export interface SettingsCompanyData {
+  readonly name: string;
+  readonly signature: string;
+  readonly logoUrl?: string;
+}
+
+export interface SettingsContactData {
+  readonly phone: string;
+  readonly whatsapp: string;
+  readonly email: string;
+  readonly address: string;
+  readonly officeNote: string;
+}
+
+export interface SettingsOpeningHoursData {
+  readonly weekdays: string;
+  readonly saturday: string;
+  readonly sunday: string;
+  readonly visitors: string;
+}
+
+export interface SettingsNotificationPreferencesData {
+  readonly interventions: string;
+  readonly clientMessages: string;
+  readonly reports: string;
+}
+
+export interface SettingsApiResponse {
+  readonly profile: SettingsProfileData;
+  readonly company: SettingsCompanyData;
+  readonly contact: SettingsContactData;
+  readonly openingHours: SettingsOpeningHoursData;
+  readonly notifications: SettingsNotificationPreferencesData;
+}
+
+export type UpdateSettingsPayload = {
+  readonly profile?: Partial<SettingsProfileData>;
+  readonly company?: Partial<SettingsCompanyData>;
+  readonly contact?: Partial<SettingsContactData>;
+  readonly openingHours?: Partial<SettingsOpeningHoursData>;
+  readonly notifications?: Partial<SettingsNotificationPreferencesData>;
+};
+
+// ─── Types pour la Gestion des Comptes Administrateurs ───────────────────────
+
+export interface AdminAccountItem {
+  readonly id: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: "Super Administrateur" | "Administrateur" | "Responsable d'agence" | string;
+  readonly avatarUrl?: string;
+  readonly createdAt: string;
+  readonly isCurrentUser?: boolean;
+}
+
+export type CreateAdminPayload = Omit<AdminAccountItem, "id" | "createdAt" | "isCurrentUser">;
+
 // ─── Service API (Axios prêt pour le branchement backend) ─────────────────────
 
 export const dashboardServicesApi = {
@@ -346,6 +412,143 @@ export const dashboardServicesApi = {
 
     return INITIAL_UPCOMING_INTERVENTIONS_DATA;
   },
+
+  /**
+   * Récupère les paramètres complets du dashboard (profil, entreprise, coordonnées, horaires, notifications).
+   * Endpoint prévu : GET /dashboard/settings
+   */
+  async getSettings(): Promise<SettingsApiResponse> {
+    // ─── Appel API Axios (décommenter dès que l'endpoint backend est disponible) ──
+    // const response = await apiClient.get<SettingsApiResponse>(
+    //   "/dashboard/settings"
+    // );
+    // return response.data;
+
+    try {
+      const stored = sessionStorage.getItem("cleanpro_dashboard_settings");
+      if (stored) {
+        return JSON.parse(stored) as SettingsApiResponse;
+      }
+    } catch {
+      // Ignorer si sessionStorage est indisponible
+    }
+
+    return INITIAL_SETTINGS_DATA;
+  },
+
+  /**
+   * Met à jour les paramètres du dashboard dans la base de données.
+   * Endpoint prévu : PUT /dashboard/settings
+   */
+  async updateSettings(payload: UpdateSettingsPayload): Promise<SettingsApiResponse> {
+    // ─── Appel API Axios (décommenter dès que l'endpoint backend est disponible) ──
+    // const response = await apiClient.put<SettingsApiResponse>(
+    //   "/dashboard/settings",
+    //   payload
+    // );
+    // return response.data;
+
+    const current = await this.getSettings();
+    const updated: SettingsApiResponse = {
+      profile: { ...current.profile, ...(payload.profile || {}) },
+      company: { ...current.company, ...(payload.company || {}) },
+      contact: { ...current.contact, ...(payload.contact || {}) },
+      openingHours: { ...current.openingHours, ...(payload.openingHours || {}) },
+      notifications: { ...current.notifications, ...(payload.notifications || {}) },
+    };
+
+    try {
+      sessionStorage.setItem("cleanpro_dashboard_settings", JSON.stringify(updated));
+    } catch {
+      // Ignorer si sessionStorage est indisponible
+    }
+
+    return updated;
+  },
+
+  /**
+   * Récupère la liste des comptes administrateurs depuis la BDD.
+   * Endpoint prévu : GET /dashboard/admins
+   */
+  async getAdmins(): Promise<readonly AdminAccountItem[]> {
+    // ─── Appel API Axios (décommenter dès que l'endpoint backend est disponible) ──
+    // const response = await apiClient.get<readonly AdminAccountItem[]>(
+    //   "/dashboard/admins"
+    // );
+    // return response.data;
+
+    try {
+      const stored = sessionStorage.getItem("cleanpro_dashboard_admins");
+      if (stored) {
+        return JSON.parse(stored) as readonly AdminAccountItem[];
+      }
+    } catch {
+      // Ignorer si sessionStorage indisponible
+    }
+
+    return INITIAL_ADMINS_DATA;
+  },
+
+  /**
+   * Crée un nouveau compte administrateur dans la base de données.
+   * Endpoint prévu : POST /dashboard/admins
+   */
+  async createAdmin(payload: CreateAdminPayload): Promise<AdminAccountItem> {
+    // ─── Appel API Axios (décommenter dès que l'endpoint backend est disponible) ──
+    // const response = await apiClient.post<AdminAccountItem>(
+    //   "/dashboard/admins",
+    //   payload
+    // );
+    // return response.data;
+
+    const current = await this.getAdmins();
+    const newAdmin: AdminAccountItem = {
+      id: `admin-${Date.now()}`,
+      name: payload.name.trim(),
+      email: payload.email.trim().toLowerCase(),
+      role: payload.role,
+      avatarUrl: payload.avatarUrl || "",
+      createdAt: new Intl.DateTimeFormat("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(new Date()),
+      isCurrentUser: false,
+    };
+
+    const nextList = [...current, newAdmin];
+    try {
+      sessionStorage.setItem("cleanpro_dashboard_admins", JSON.stringify(nextList));
+    } catch {
+      // Ignorer si indisponible
+    }
+
+    return newAdmin;
+  },
+
+  /**
+   * Supprime un compte administrateur dans la BDD.
+   * Endpoint prévu : DELETE /dashboard/admins/:id
+   */
+  async deleteAdmin(id: string): Promise<boolean> {
+    // ─── Appel API Axios (décommenter dès que l'endpoint backend est disponible) ──
+    // await apiClient.delete(`/dashboard/admins/${id}`);
+    // return true;
+
+    try {
+      const current = await this.getAdmins();
+      // Protection anti auto-suppression du compte principal connecté (CWE-284)
+      const target = current.find((a) => a.id === id);
+      if (target?.isCurrentUser) {
+        throw new Error("Impossible de supprimer le compte administrateur principal connecté.");
+      }
+      const nextList = current.filter((a) => a.id !== id);
+      sessionStorage.setItem("cleanpro_dashboard_admins", JSON.stringify(nextList));
+      return true;
+    } catch {
+      return false;
+    }
+  },
 };
 
 // ─── Données initiales du catalogue de référence (fidèles à la capture) ───────
@@ -539,4 +742,52 @@ export const INITIAL_PLANNING_DATA: PlanningApiResponse = Object.freeze({
     },
   ]),
 });
+
+// ─── Données initiales des paramètres (fidèles à la capture) ─────────────────
+export const INITIAL_SETTINGS_DATA: SettingsApiResponse = Object.freeze({
+  profile: Object.freeze({
+    name: "Amina Diallo",
+    role: "Responsable d'agence",
+    email: "À compléter",
+    avatarUrl: "",
+  }),
+  company: Object.freeze({
+    name: "CleanPro",
+    signature: "Services de Nettoyage",
+    logoUrl: "",
+  }),
+  contact: Object.freeze({
+    phone: "+237678123456",
+    whatsapp: "+237678123456",
+    email: "contact@cleanpro.cm",
+    address: "Avenue de la Paix, Yaoundé Cameroun",
+    officeNote: "Nos bureaux sont ouverts sur rendez-vous.",
+  }),
+  openingHours: Object.freeze({
+    weekdays: "8h00–17h00",
+    saturday: "8h00–12h00",
+    sunday: "Fermé",
+    visitors: "Sur rendez-vous",
+  }),
+  notifications: Object.freeze({
+    interventions: "Non renseigné",
+    clientMessages: "Non renseigné",
+    reports: "Non renseigné",
+  }),
+});
+
+// ─── Données initiales des comptes administrateurs ───────────────────────────
+export const INITIAL_ADMINS_DATA: readonly AdminAccountItem[] = Object.freeze([
+  {
+    id: "admin-amina-1",
+    name: "Amina Diallo",
+    email: "amina.diallo@cleanpro.cm",
+    role: "Responsable d'agence",
+    avatarUrl: "",
+    createdAt: "15/01/2025",
+    isCurrentUser: true,
+  },
+]);
+
+
 

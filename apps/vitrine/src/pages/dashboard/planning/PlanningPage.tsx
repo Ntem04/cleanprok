@@ -216,7 +216,7 @@ export default function PlanningPage() {
       <Reveal direction="down" delay={60}>
         <div className="flex flex-col gap-3 rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[#135d3b]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-[#15364a]">
               <CalendarCheck size={20} aria-hidden={true} />
             </div>
             <div>

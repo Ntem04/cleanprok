@@ -11,13 +11,13 @@ import type {
 
 const STATUS_CONFIG: Record<InterventionStatus, { className: string }> = {
   Terminée: {
-    className: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    className: "border-slate-200 bg-slate-100 text-slate-700",
   },
   "En cours": {
     className: "border-sky-200 bg-sky-50 text-sky-800",
   },
   Planifiée: {
-    className: "border-slate-200 bg-slate-100 text-slate-700",
+    className: "border-slate-200 bg-slate-100 text-slate-600",
   },
 };
 

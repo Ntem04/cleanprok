@@ -88,14 +88,14 @@ export default function ServiceCardItem({
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
           <div className="flex items-center gap-1.5">
             {isSelected && (
-              <span className="inline-flex items-center rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[13px] font-semibold text-emerald-800">
+              <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2.5 py-1 text-[13px] font-semibold text-slate-800">
                 Sélectionné
               </span>
             )}
             
             {/* Badge de statut du service */}
             {service.status === "disponible" && (
-              <span className="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50/70 px-2 py-0.5 text-sm font-medium text-emerald-700">
+              <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-sm font-medium text-slate-700">
                 ● Disponible
               </span>
             )}
